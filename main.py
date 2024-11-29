@@ -6,6 +6,11 @@ from google.cloud import texttospeech
 from elevenlabs import ElevenLabs # type: ignore
 import openai  # type: ignore
 import base64
+import logging
+logging.basicConfig(level=logging.INFO)
+
+openai_api_key = os.getenv("OPENAI_API_KEY", "clave_por_defecto")
+logging.info(f"Clave API de OpenAI: {openai_api_key[:5]}******")  # Solo muestra los primeros caracteres para verificar
 
 # Configura tu archivo JSON de autenticación de Google Cloud
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "key/clave.json"
