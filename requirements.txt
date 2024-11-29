@@ -4,3 +4,4 @@ elevenlabs
 openai
 uvicorn
 python-dotenv
+base64
