@@ -97,7 +97,7 @@ async def interactuar_agente_conversacional(mensaje):
 # Lista todas las voces asociadas con tu cuenta
 # Listar voces disponibles
 
-""" def generar_audio(respuesta_texto):
+def generar_audio(respuesta_texto):
     try:
         # Genera el audio utilizando ElevenLabs
         audio_generator = eleven_labs.generate(
@@ -113,10 +113,10 @@ async def interactuar_agente_conversacional(mensaje):
         # Codifica el audio en Base64
         return base64.b64encode(audio_bytes).decode("utf-8")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al generar audio: {str(e)}") """
+        raise HTTPException(status_code=500, detail=f"Error al generar audio: {str(e)}") 
 
 # Función para sintetizar texto a audio GOOGLE CLOUD
-def generar_audio(respuesta_texto):
+"""def generar_audio(respuesta_texto):
     try:
         synthesis_input = texttospeech.SynthesisInput(text=respuesta_texto)
         voice = texttospeech.VoiceSelectionParams(
@@ -133,7 +133,7 @@ def generar_audio(respuesta_texto):
         # Codifica el audio en Base64
         return base64.b64encode(response_audio.audio_content).decode("utf-8")
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Error al generar audio")
+        raise HTTPException(status_code=500, detail="Error al generar audio")"""
 
 @app.websocket("/ws/conversar")
 async def websocket_endpoint(websocket: WebSocket):
