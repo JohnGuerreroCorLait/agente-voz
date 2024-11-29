@@ -110,10 +110,15 @@ def generar_audio(respuesta_texto):
         # Consume el generador para obtener los datos de audio como bytes
         audio_bytes = b"".join(audio_generator)
 
+        if not audio_bytes:
+            raise ValueError("La generación de audio no devolvió datos.")
+
         # Codifica el audio en Base64
         return base64.b64encode(audio_bytes).decode("utf-8")
+    except ValueError as ve:
+        raise HTTPException(status_code=500, detail=f"Error al generar audio: {str(ve)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al generar audio: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Error desconocido: {str(e)}")
 
 # Función para sintetizar texto a audio GOOGLE CLOUD
 """def generar_audio(respuesta_texto):
