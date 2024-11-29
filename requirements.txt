@@ -1,0 +1,6 @@
+fastapi
+google-cloud-texttospeech
+elevenlabs
+openai
+uvicorn
+python-dotenv
