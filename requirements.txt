@@ -1,6 +1,6 @@
 fastapi
 google-cloud-texttospeech
 elevenlabs
-openai
+openai>=1.0.0
 uvicorn
 python-dotenv
