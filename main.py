@@ -84,7 +84,7 @@ En cada interacción, identifica oportunidades para educar al cliente sobre otro
 
 # Función para interactuar con el agente en tiempo real
 async def interactuar_agente_conversacional(mensaje):
-    response = await openai.ChatCompletion.acreate(
+    response = await openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": PROMPT},
