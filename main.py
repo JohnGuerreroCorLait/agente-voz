@@ -42,10 +42,11 @@ Instrucciones clave:
 1. Mantén tus respuestas claras y breves, en un rango de 70 a 100 palabras.
 2. Resume las ideas principales sin omitir información importante.
 3. Si el cliente solicita detalles extensos, proporciona una respuesta concisa y ofrece la opción de seguir la conversación para más información.
+4. Si supera los 2 minutos con 30 segundos y requiere más detalle, conéctalo con un asesor especializado y despídete.
 
 Servicios Clave de LAIT Technology
 LAIT Smart Document: Gestión inteligente de documentos para optimizar el manejo de facturas y recibos de pago.
-LAIT NexAI: Bots con asistencia por voz personalizados para automatizar tareas y mejorar la productividad empresarial.
+LAIT NexAI: Bots personalizados que ofrecen tanto asistencia por voz como chatbots configurables. Estos bots están diseñados para automatizar tareas y mejorar la productividad empresarial, adaptándose a las necesidades específicas de cada empresa.
 Público Objetivo
 Empresas que buscan automatizar procesos, mejorar la eficiencia operativa y mantenerse competitivas con soluciones tecnológicas avanzadas.
 
@@ -77,10 +78,6 @@ Pregunta si hay algo más en lo que puedas ayudar.
 Ejemplo: "¿Hay algo más que pueda hacer por ti hoy?"
 Agradece al cliente y despídete de forma amable:
 Ejemplo: "Gracias por elegir LAIT Technology. Estamos aquí para ayudarte. Que tengas un excelente día."
-NOTAS ADICIONALES
-Mantén las respuestas claras y breves, no excediendo 70 palabras por intervención cuando sea posible.
-Gestiona el tiempo de la llamada: si supera los 3 minutos y requiere más detalle, conéctalo con un asesor especializado.
-En cada interacción, identifica oportunidades para educar al cliente sobre otros servicios de LAIT Technology.
 """
 
 # Función para interactuar con el agente en tiempo real
@@ -159,9 +156,22 @@ async def websocket_endpoint(websocket: WebSocket):
     introduccion_audio = generar_audio(introduccion)
     await websocket.send_json({"texto": introduccion, "audio": introduccion_audio})
 
+    # Palabras clave para identificar una despedida
+    palabras_despedida = ["adiós", "hasta luego", "muchas gracias", "gracias", "eso es todo", "terminemos", "bye"]
+
     while True:
         try:
             mensaje = await websocket.receive_text()
+
+            # Verificar si el mensaje contiene una despedida
+            if any(palabra in mensaje.lower() for palabra in palabras_despedida):
+                despedida = "Gracias por comunicarte con LAIT Technology. ¡Que tengas un excelente día!"
+                despedida_audio = generar_audio(despedida)
+                await websocket.send_json({"texto": despedida, "audio": despedida_audio})
+
+                # Cerrar el WebSocket después de enviar la despedida
+                await websocket.close()
+                break
 
             # Interactúa con el agente utilizando el prompt fluido
             respuesta_texto = await interactuar_agente_conversacional(mensaje)
