@@ -7,6 +7,7 @@ from elevenlabs import ElevenLabs # type: ignore
 import openai  # type: ignore
 import base64
 import logging
+import asyncio  # Asegúrate de importar asyncio si no está incluido.
 logging.basicConfig(level=logging.INFO)
 
 openai_api_key = os.getenv("OPENAI_API_KEY", "clave_por_defecto")
@@ -83,21 +84,19 @@ En cada interacción, identifica oportunidades para educar al cliente sobre otro
 """
 
 # Función para interactuar con el agente en tiempo real
-def interactuar_agente_conversacional(mensaje):
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": PROMPT},
-                {"role": "user", "content": mensaje},
-            ],
-            max_tokens=150,
-            temperature=0.7,
-            n=1
-        )
-        return response['choices'][0]['message']['content']
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al interactuar con OpenAI: {str(e)}")
+
+async def interactuar_agente_conversacional(mensaje):
+    response = await openai.ChatCompletion.acreate(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": PROMPT},
+            {"role": "user", "content": mensaje},
+        ],
+        max_tokens=150,  # Ajustado para producir respuestas de 70-100 palabras
+        temperature=0.7,  # Reduce la creatividad para priorizar la concisión
+        n=1
+    )
+    return response['choices'][0]['message']['content']
 
 
 
@@ -165,7 +164,7 @@ async def websocket_endpoint(websocket: WebSocket):
             mensaje = await websocket.receive_text()
 
             # Interactúa con el agente utilizando el prompt fluido
-            respuesta_texto = interactuar_agente_conversacional(mensaje)  # Llamada sin await
+            respuesta_texto = await interactuar_agente_conversacional(mensaje)
             respuesta_audio = generar_audio(respuesta_texto)
 
             await websocket.send_json({"texto": respuesta_texto, "audio": respuesta_audio})
