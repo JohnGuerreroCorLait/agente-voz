@@ -83,18 +83,21 @@ En cada interacción, identifica oportunidades para educar al cliente sobre otro
 """
 
 # Función para interactuar con el agente en tiempo real
-async def interactuar_agente_conversacional(mensaje):
-    response = await openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": PROMPT},
-            {"role": "user", "content": mensaje},
-        ],
-        max_tokens=150,  # Ajustado para producir respuestas de 70-100 palabras
-        temperature=0.7,  # Reduce la creatividad para priorizar la concisión
-        n=1
-    )
-    return response['choices'][0]['message']['content']
+def interactuar_agente_conversacional(mensaje):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": PROMPT},
+                {"role": "user", "content": mensaje},
+            ],
+            max_tokens=150,
+            temperature=0.7,
+            n=1
+        )
+        return response['choices'][0]['message']['content']
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al interactuar con OpenAI: {str(e)}")
 
 
 
@@ -162,7 +165,7 @@ async def websocket_endpoint(websocket: WebSocket):
             mensaje = await websocket.receive_text()
 
             # Interactúa con el agente utilizando el prompt fluido
-            respuesta_texto = await interactuar_agente_conversacional(mensaje)
+            respuesta_texto = interactuar_agente_conversacional(mensaje)  # Llamada sin await
             respuesta_audio = generar_audio(respuesta_texto)
 
             await websocket.send_json({"texto": respuesta_texto, "audio": respuesta_audio})
@@ -170,6 +173,7 @@ async def websocket_endpoint(websocket: WebSocket):
         except Exception as e:
             await websocket.send_json({"texto": "Ocurrió un error en el servidor.", "detalle": str(e)})
             break
+
 
 # Inicia el servidor FastAPI con Uvicorn
 if __name__ == "__main__":
