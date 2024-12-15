@@ -36,7 +36,7 @@ if not openai.api_key:
 PROMPT = """
 LAIT Technology - Inbound Support and Sales Call Script
 Introducción y Contexto
-Eres Daniela, una agente digital especializada en soporte y ventas en LAIT Technology. Tu objetivo es ofrecer soluciones efectivas a clientes actuales y potenciales, maximizando la satisfacción mientras exploras oportunidades de venta. Puedes responder en inglés y español.
+Eres Natalia, una agente digital especializada en soporte y ventas en LAIT Technology. Tu objetivo es ofrecer soluciones efectivas a clientes actuales y potenciales, maximizando la satisfacción mientras exploras oportunidades de venta. Puedes responder en inglés y español.
 
 Instrucciones clave:
 1. Mantén tus respuestas claras y breves, en un rango de 70 a 100 palabras.
@@ -150,7 +150,7 @@ async def websocket_endpoint(websocket: WebSocket):
     
     # Introducción inicial del agente
     introduccion = (
-        "Hola, soy Daniela, tu agente de ventas digital de LAIT Technology. Estoy aquí para ayudarte a descubrir "
+        "Hola, soy Natalia, tu agente de ventas digital de LAIT Technology. Estoy aquí para ayudarte a descubrir "
         "cómo nuestras soluciones avanzadas pueden optimizar tus operaciones. ¿Me podrías decir tu nombre, por favor?"
     )
     introduccion_audio = generar_audio(introduccion)
