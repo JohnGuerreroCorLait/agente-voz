@@ -106,7 +106,7 @@ def generar_audio(respuesta_texto):
         # Genera el audio utilizando ElevenLabs
         audio_generator = eleven_labs.generate(
             text=respuesta_texto,
-            voice="HECyKWztfqqqMGKmnN8r",  # Cambia por el ID de la voz que prefieras
+            voice="Db2IZsmhaC6whev4HkLm",  # Cambia por el ID de la voz que prefieras
             model="eleven_multilingual_v2",
             
         )
