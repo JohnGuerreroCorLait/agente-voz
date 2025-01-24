@@ -1,5 +1,7 @@
 import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, HTTPException  # type: ignore
+import httpx
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
 from fastapi.responses import JSONResponse  # type: ignore
 from google.cloud import texttospeech
@@ -8,6 +10,7 @@ import openai  # type: ignore
 import base64
 import logging
 import asyncio  # Asegúrate de importar asyncio si no está incluido.
+
 logging.basicConfig(level=logging.INFO)
 
 openai_api_key = os.getenv("OPENAI_API_KEY", "clave_por_defecto")
@@ -23,6 +26,46 @@ if not eleven_labs_api_key:
 eleven_labs = ElevenLabs(api_key=eleven_labs_api_key)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200","https://0j7f3mhw-4200.use2.devtunnels.ms","https://agente-lait.web.app"],  # Permitir solicitudes solo desde el servidor Angular
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API route to get signed URL
+@app.get("/api/signed-url")
+async def get_signed_url():
+    agent_id = os.getenv("AGENT_ID")
+    xi_api_key = os.getenv("XI_API_KEY")
+    
+    if not agent_id or not xi_api_key:
+        raise HTTPException(status_code=500, detail="Missing environment variables")
+    
+    url = f"https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id={agent_id}"
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                url,
+                headers={"xi-api-key": xi_api_key}
+            )
+            response.raise_for_status()
+            data = response.json()
+            return {"signedUrl": data["signed_url"]}
+            
+        except httpx.HTTPError:
+            raise HTTPException(status_code=500, detail="Failed to get signed URL")
+
+# API route for getting Agent ID
+@app.get("/api/getAgentId")
+def get_unsigned_url():
+    agent_id = os.getenv("AGENT_ID")
+    if not agent_id:
+        raise HTTPException(status_code=500, detail="Agent ID not found in environment variables")
+    return {"agentId": agent_id}
 
 # Inicializa el cliente de Google TTS
 tts_client = texttospeech.TextToSpeechClient()
