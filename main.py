@@ -67,6 +67,92 @@ def get_unsigned_url():
         raise HTTPException(status_code=500, detail="Agent ID not found in environment variables")
     return {"agentId": agent_id}
 
+# API route to get signed URL
+@app.get("/api/signed-url-lait")
+async def get_signed_url():
+    agent_id = os.getenv("AGENT_ID_LAIT")
+    xi_api_key = os.getenv("XI_API_KEY")
+    
+    if not agent_id or not xi_api_key:
+        raise HTTPException(status_code=500, detail="Missing environment variables")
+    
+    url = f"https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id={agent_id}"
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                url,
+                headers={"xi-api-key": xi_api_key}
+            )
+            response.raise_for_status()
+            data = response.json()
+            return {"signedUrl": data["signed_url"]}
+            
+        except httpx.HTTPError:
+            raise HTTPException(status_code=500, detail="Failed to get signed URL")
+
+# API route for getting Agent ID
+@app.get("/api/getAgentIdLait")
+def get_unsigned_url():
+    agent_id = os.getenv("AGENT_ID_LAIT")
+    if not agent_id:
+        raise HTTPException(status_code=500, detail="Agent ID not found in environment variables")
+    return {"agentId": agent_id}
+
+@app.post("/api/configurar-agente")
+async def configurar_agente(request: Request):
+    agent_id = os.getenv("AGENT_ID_LAIT")
+    xi_api_key = os.getenv("XI_API_KEY")
+    
+    if not agent_id or not xi_api_key:
+        raise HTTPException(status_code=500, detail="Faltan variables de entorno")
+    
+    data = await request.json()
+    print(data)
+    prompt = data.get("prompt")
+    voice_id = data.get("voice_id")
+    agent_name = data.get("agentName")
+    initial_greeting = 'Hola, mucho gusto soy '+data.get("agentName")+', tu agente de personalizado ¿En qué te puedo colaborar el día de hoy?'
+    
+    if not prompt or not voice_id:
+        raise HTTPException(status_code=400, detail="Faltan datos: prompt y/o voice_id")
+    
+    body = {
+        "name": agent_name,
+        "conversation_config": {
+            "agent": {
+              "first_message": initial_greeting,
+                "prompt": {
+                    "prompt": prompt,
+                    "llm": "gemini-2.0-flash-001",
+                    "temperature": 0,
+                    "max_tokens": -1
+                }
+            },
+            "tts": {
+                "voice_id": voice_id
+            }
+        }
+    }
+    
+    url = f"https://api.elevenlabs.io/v1/convai/agents/{agent_id}"
+    headers = {
+        "xi-api-key": xi_api_key,
+        "Content-Type": "application/json"
+    }
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.patch(url, headers=headers, json=body)
+            response.raise_for_status()
+            return {"message": "Agente configurado correctamente"}
+        except httpx.HTTPStatusError as e:
+            print("Error en la respuesta:", e.response.text)
+            raise HTTPException(status_code=500, detail=f"Error de ElevenLabs: {e.response.text}")
+        except Exception as e:
+            print("Error inesperado:", str(e))
+            raise HTTPException(status_code=500, detail="Error inesperado al configurar el agente")
+
 # Inicializa el cliente de Google TTS
 tts_client = texttospeech.TextToSpeechClient()
 
