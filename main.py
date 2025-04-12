@@ -112,7 +112,7 @@ async def configurar_agente(request: Request):
     prompt = data.get("prompt")
     voice_id = data.get("voice_id")
     agent_name = data.get("agentName")
-    initial_greeting = 'Hola, mucho gusto soy '+data.get("agentName")+', tu agente de personalizado ¿En qué te puedo colaborar el día de hoy?'
+    initial_greeting = 'Hola, mucho gusto soy '+data.get("agentName")+'. Tu agente personalizado ¿En qué te puedo colaborar el día de hoy?'
     
     if not prompt or not voice_id:
         raise HTTPException(status_code=400, detail="Faltan datos: prompt y/o voice_id")
@@ -152,6 +152,31 @@ async def configurar_agente(request: Request):
         except Exception as e:
             print("Error inesperado:", str(e))
             raise HTTPException(status_code=500, detail="Error inesperado al configurar el agente")
+
+@app.get("/api/obtener-nombre-agente")
+async def obtener_nombre_agente():
+    agent_id = os.getenv("AGENT_ID_LAIT")
+    xi_api_key = os.getenv("XI_API_KEY")
+
+    if not agent_id or not xi_api_key:
+        raise HTTPException(status_code=500, detail="Faltan variables de entorno")
+
+    url = f"https://api.elevenlabs.io/v1/convai/agents/{agent_id}"
+    headers = {
+        "xi-api-key": xi_api_key
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            nombre = data.get("name")  # <- Aquí se corrigió
+            if not nombre:
+                raise HTTPException(status_code=404, detail="No se encontró el nombre del agente.")
+            return {"agent_name": nombre}
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=500, detail=f"Error de ElevenLabs: {e.response.text}")
 
 # Inicializa el cliente de Google TTS
 tts_client = texttospeech.TextToSpeechClient()
